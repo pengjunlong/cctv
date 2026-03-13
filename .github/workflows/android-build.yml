@@ -97,7 +97,7 @@ jobs:
     steps:
     - name: Get version from tag
       id: ver
-      run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+      run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
     # 从 build job 下载产物，无需重新编译
     - name: Download Release APK
@@ -109,10 +109,10 @@ jobs:
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
       with:
-        tag_name: ${{ steps.ver.outputs.VERSION }}
-        name: "CCTV TV App ${{ steps.ver.outputs.VERSION }}"
+        tag_name: v${{ steps.ver.outputs.VERSION }}
+        name: "CCTV TV App v${{ steps.ver.outputs.VERSION }}"
         body: |
-          ## CCTV TV App ${{ steps.ver.outputs.VERSION }}
+          ## CCTV TV App v${{ steps.ver.outputs.VERSION }}
 
           ### 功能特性
           - ✅ 支持央视 CCTV-1 至 CCTV-17 全频道直播
