@@ -60,6 +60,7 @@ git push origin v1.0.0
 ### 1. 生成 keystore
 
 ```bash
+# 需要 JDK 17+ 环境
 keytool -genkey -v -keystore my-release-key.jks \
   -keyalg RSA -keysize 2048 -validity 10000 \
   -alias my-key-alias
