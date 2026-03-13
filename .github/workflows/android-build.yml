@@ -1,0 +1,137 @@
+name: Android CI
+
+on:
+  push:
+    branches: [ main, master ]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ main, master ]
+  # 支持手动触发
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 11
+      uses: actions/setup-java@v4
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+        # 缓存 Gradle 依赖，加快构建速度
+        cache: gradle
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+
+    # 从 git tag / commit 自动推断版本号，注入 build.gradle
+    - name: Extract version info
+      id: version
+      run: |
+        if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+          # Tag 构建：v1.2.3 → versionName=1.2.3，versionCode=10203
+          RAW="${GITHUB_REF#refs/tags/v}"
+          MAJOR=$(echo "$RAW" | cut -d. -f1)
+          MINOR=$(echo "$RAW" | cut -d. -f2)
+          PATCH=$(echo "$RAW" | cut -d. -f3)
+          V_NAME="$RAW"
+          V_CODE=$(( MAJOR * 10000 + MINOR * 100 + (PATCH+0) ))
+        else
+          # 普通 push：使用 CI 运行编号
+          V_NAME="dev-$(git rev-parse --short HEAD)"
+          V_CODE="${GITHUB_RUN_NUMBER}"
+        fi
+        echo "VERSION_NAME=$V_NAME" >> $GITHUB_ENV
+        echo "VERSION_CODE=$V_CODE" >> $GITHUB_ENV
+        echo "APK_BASENAME=CctvTvApp-${V_NAME}" >> $GITHUB_ENV
+        echo "::notice::Building version $V_NAME (code $V_CODE)"
+
+    - name: Build Debug APK
+      run: ./gradlew assembleDebug --stacktrace
+      env:
+        VERSION_NAME: ${{ env.VERSION_NAME }}
+        VERSION_CODE: ${{ env.VERSION_CODE }}
+
+    - name: Build Release APK (unsigned)
+      run: ./gradlew assembleRelease --stacktrace
+      env:
+        VERSION_NAME: ${{ env.VERSION_NAME }}
+        VERSION_CODE: ${{ env.VERSION_CODE }}
+
+    # 重命名带版本号
+    - name: Rename output APKs
+      run: |
+        cp app/build/outputs/apk/debug/app-debug.apk \
+           app/build/outputs/apk/debug/${{ env.APK_BASENAME }}-debug.apk
+        cp app/build/outputs/apk/release/app-release-unsigned.apk \
+           app/build/outputs/apk/release/${{ env.APK_BASENAME }}-release-unsigned.apk
+
+    - name: Upload Debug APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.APK_BASENAME }}-debug
+        path: app/build/outputs/apk/debug/${{ env.APK_BASENAME }}-debug.apk
+        retention-days: 7
+
+    - name: Upload Release APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.APK_BASENAME }}-release
+        path: app/build/outputs/apk/release/${{ env.APK_BASENAME }}-release-unsigned.apk
+        retention-days: 30
+
+  # 仅 push tag 时自动发布 Release
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+    - name: Get version from tag
+      id: ver
+      run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+    # 从 build job 下载产物，无需重新编译
+    - name: Download Release APK
+      uses: actions/download-artifact@v4
+      with:
+        name: CctvTvApp-${{ steps.ver.outputs.VERSION }}-release
+        path: ./artifacts
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ steps.ver.outputs.VERSION }}
+        name: "CCTV TV App ${{ steps.ver.outputs.VERSION }}"
+        body: |
+          ## CCTV TV App ${{ steps.ver.outputs.VERSION }}
+
+          ### 功能特性
+          - ✅ 支持央视 CCTV-1 至 CCTV-17 全频道直播
+          - ✅ ExoPlayer 播放器，支持 HLS 自适应码率
+          - ✅ Android TV 遥控器适配（上下键切换频道）
+          - ✅ 自动解析央视直播流地址（绕过 WebView 兼容性问题）
+          - ✅ 智能 Fallback 机制（多级 CDN + 音频流保底）
+
+          ### 系统要求
+          - Android 6.0 (API 23) 及以上
+          - 推荐 Android TV / 电视盒子设备
+
+          ### 安装说明
+          1. 下载下方 `*-release-unsigned.apk`
+          2. 传输到 Android TV 设备（U 盘、ADB 或文件管理器）
+          3. 允许安装未知来源后安装即可
+
+          ---
+          > 本应用仅供学习交流使用。
+        files: artifacts/*.apk
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
