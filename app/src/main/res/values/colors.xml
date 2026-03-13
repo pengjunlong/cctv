@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 主题色 -->
+    <color name="color_primary">#CC0000</color>
+    <color name="color_primary_dark">#990000</color>
+    <color name="color_accent">#FF6600</color>
+
+    <!-- 背景色 -->
+    <color name="bg_main">#1A1A1A</color>
+    <color name="bg_sidebar">#222222</color>
+    <color name="bg_loading">#99000000</color>
+
+    <!-- 频道列表条目 -->
+    <color name="channel_item_normal">#2C2C2C</color>
+    <color name="channel_item_focused">#CC0000</color>
+    <color name="channel_item_selected">#880000</color>
+
+    <!-- 文字颜色 -->
+    <color name="white">#FFFFFF</color>
+    <color name="text_normal">#CCCCCC</color>
+    <color name="text_focused">#FFFFFF</color>
+</resources>
+

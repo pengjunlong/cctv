@@ -1,0 +1,48 @@
+plugins {
+    alias(libs.plugins.android.application)
+}
+
+android {
+    namespace 'com.cctv.tvapp'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId "com.cctv.tvapp"
+        minSdk 23
+        targetSdk 36
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+    buildToolsVersion '33.0.2'
+}
+
+dependencies {
+    // RecyclerView + AppCompat
+    implementation 'androidx.leanback:leanback:1.0.0'
+    implementation 'androidx.recyclerview:recyclerview:1.3.2'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+
+    // ExoPlayer（Media3，支持 HLS 直播流）
+    // media3 最低支持 API 21，完美兼容 Android 6.0(API 23)
+    implementation 'androidx.media3:media3-exoplayer:1.3.1'
+    implementation 'androidx.media3:media3-exoplayer-hls:1.3.1'
+    implementation 'androidx.media3:media3-ui:1.3.1'
+    implementation 'androidx.media3:media3-datasource-okhttp:1.3.1'
+
+    // OkHttp（发起 Token/m3u8 解析请求）
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+
+    // Gson（解析 liveHtml5.do 返回的 JSON）
+    implementation 'com.google.code.gson:gson:2.10.1'
+}

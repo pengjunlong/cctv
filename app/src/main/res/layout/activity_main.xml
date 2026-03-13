@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    主界面布局（ExoPlayer 版）
+    左侧：频道列表（200dp），右侧：ExoPlayer PlayerView 播放区
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_main">
+
+    <!-- 主内容区：频道列表 + 播放器 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+        <!-- 左侧频道列表 -->
+        <LinearLayout
+            android:id="@+id/panel_channel"
+            android:layout_width="200dp"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:background="@color/bg_sidebar">
+
+            <!-- 当前频道名称标题栏 -->
+            <TextView
+                android:id="@+id/tv_current_channel"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:gravity="center"
+                android:text="央视直播"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:background="@color/color_primary"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp" />
+
+            <!-- 频道列表 RecyclerView -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_channel_list"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:descendantFocusability="afterDescendants"
+                android:scrollbars="none"
+                android:overScrollMode="never" />
+
+        </LinearLayout>
+
+        <!-- 右侧播放区域 -->
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@android:color/black">
+
+            <!--
+                ExoPlayer PlayerView
+                resize_mode="fill"：拉伸填满整个区域（TV 大屏最佳体验）
+                use_controller="false"：禁用内置播放控制条（用遥控器操作）
+            -->
+            <androidx.media3.ui.PlayerView
+                android:id="@+id/player_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:focusable="true"
+                android:focusableInTouchMode="false"
+                app:use_controller="false"
+                app:resize_mode="fill" />
+
+            <!-- 加载中遮罩（解析/缓冲时显示） -->
+            <FrameLayout
+                android:id="@+id/loading_overlay"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/bg_loading"
+                android:visibility="gone"
+                android:gravity="center">
+
+                <!-- 正在加载提示 -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="正在获取直播流..."
+                        android:textColor="@color/white"
+                        android:textSize="18sp" />
+
+                </LinearLayout>
+
+            </FrameLayout>
+
+        </FrameLayout>
+
+    </LinearLayout>
+
+</FrameLayout>

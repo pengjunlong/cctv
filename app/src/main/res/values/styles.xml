@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- 基础 TV 主题：去掉 ActionBar，使用深色背景 -->
+    <style name="AppTheme" parent="@android:style/Theme.DeviceDefault">
+        <item name="android:windowBackground">@color/bg_main</item>
+        <item name="android:colorPrimary">@color/color_primary</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+    </style>
+
+    <!-- 全屏主题（用于 MainActivity，隐藏状态栏和导航栏）-->
+    <style name="AppTheme.FullScreen" parent="AppTheme">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+
+</resources>
+
