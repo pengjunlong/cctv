@@ -15,6 +15,11 @@ import java.util.List;
 
 /**
  * 频道列表适配器（为 TV 遥控器焦点导航优化）
+ *
+ * 优化点：
+ * - 使用局部刷新（notifyItemChanged）而非 notifyDataSetChanged
+ * - 保存旧 selectedPosition，仅刷新变化的两个条目
+ * - onFocusChangeListener 通过 getBindingAdapterPosition 防止越界
  */
 public class ChannelAdapter extends RecyclerView.Adapter<ChannelAdapter.ChannelViewHolder> {
 
@@ -49,25 +54,26 @@ public class ChannelAdapter extends RecyclerView.Adapter<ChannelAdapter.ChannelV
         holder.itemView.setSelected(isSelected);
         holder.itemView.setActivated(isSelected);
 
-        // 为每个条目设置焦点变化监听，TV 遥控器方向键会触发焦点变化
+        // 焦点变化：遥控器方向键触发
         holder.itemView.setOnFocusChangeListener((v, hasFocus) -> {
             if (hasFocus) {
-                int adapterPosition = holder.getAdapterPosition();
-                if (adapterPosition != RecyclerView.NO_ID) {
-                    setSelectedPosition(adapterPosition);
+                int pos = holder.getBindingAdapterPosition();
+                if (pos != RecyclerView.NO_ID && pos >= 0 && pos < channels.size()) {
+                    setSelectedPosition(pos);
                     if (listener != null) {
-                        listener.onChannelSelected(channels.get(adapterPosition), adapterPosition);
+                        listener.onChannelSelected(channels.get(pos), pos);
                     }
                 }
             }
         });
 
+        // 点击事件（触摸屏/鼠标场景）
         holder.itemView.setOnClickListener(v -> {
-            int adapterPosition = holder.getAdapterPosition();
-            if (adapterPosition != RecyclerView.NO_ID) {
-                setSelectedPosition(adapterPosition);
+            int pos = holder.getBindingAdapterPosition();
+            if (pos != RecyclerView.NO_ID && pos >= 0 && pos < channels.size()) {
+                setSelectedPosition(pos);
                 if (listener != null) {
-                    listener.onChannelSelected(channels.get(adapterPosition), adapterPosition);
+                    listener.onChannelSelected(channels.get(pos), pos);
                 }
             }
         });
@@ -82,7 +88,11 @@ public class ChannelAdapter extends RecyclerView.Adapter<ChannelAdapter.ChannelV
         return selectedPosition;
     }
 
+    /**
+     * 更新选中位置，仅局部刷新变化的两个条目（旧选中 + 新选中），避免全量刷新
+     */
     public void setSelectedPosition(int position) {
+        if (position == selectedPosition) return;
         int oldPosition = selectedPosition;
         selectedPosition = position;
         notifyItemChanged(oldPosition);
@@ -97,7 +107,7 @@ public class ChannelAdapter extends RecyclerView.Adapter<ChannelAdapter.ChannelV
     }
 
     static class ChannelViewHolder extends RecyclerView.ViewHolder {
-        TextView tvChannelName;
+        final TextView tvChannelName;
 
         ChannelViewHolder(@NonNull View itemView) {
             super(itemView);

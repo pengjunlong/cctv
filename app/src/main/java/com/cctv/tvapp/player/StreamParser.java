@@ -130,6 +130,9 @@ public class StreamParser {
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private final Random random = new Random();
 
+    /** 缓存最近请求的 auth-key，避免频繁 MD5 计算（key=channelId+timestamp/10，有效期约10秒） */
+    private final java.util.Map<String, String> authKeyCache = new java.util.concurrent.ConcurrentHashMap<>();
+
     public StreamParser(OkHttpClient httpClient) {
         this.httpClient = httpClient;
     }
@@ -139,12 +142,16 @@ public class StreamParser {
     /**
      * 异步解析指定频道的直播流地址（两步解析）
      *
+     * <p>如果在同一频道的请求进行中再次调用，会自动取消旧请求，避免旧回调干扰新的播放逻辑。
+     *
      * @param channelId  频道 ID，如 "cctv_p2p_hdcctv6"
      * @param refererKey Referer 中的频道关键字，如 "cctv6"
      * @param callback   结果回调（主线程执行）
      */
     public void parseChannel(String channelId, String refererKey, ParseCallback callback) {
         Log.d(TAG, "[Step1] 开始解析频道: " + channelId);
+        // 取消该频道的旧请求（如防抖之前已发出的请求）
+        httpClient.dispatcher().cancelAll(); // 取消所有进行中的解析请求
         fetchLiveHtml5(channelId, refererKey, callback);
     }
 

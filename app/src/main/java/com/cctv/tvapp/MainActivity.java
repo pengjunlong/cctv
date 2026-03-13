@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -19,6 +20,7 @@ import com.cctv.tvapp.model.ChannelItem;
 import com.cctv.tvapp.player.StreamParser;
 import com.cctv.tvapp.player.TvPlayerManager;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -52,28 +54,33 @@ public class MainActivity extends Activity {
 
     private static final String TAG = "MainActivity";
 
+    // ---- 防抖常量 ----
+    /** 500ms 内多次上下键只解析最后一次 */
+    private static final long CHANNEL_SWITCH_DELAY_MS = 500;
+    private static final int MSG_LOAD_CHANNEL = 1;
+
     // ---- 央视频道列表 ----
     private static final List<ChannelItem> CHANNELS = new ArrayList<>();
     static {
         // channelId 对应 liveHtml5.do 的 channel=pa://{channelId}
-        CHANNELS.add(new ChannelItem("cctv_p2p_hdcctv1", "CCTV-1 综合"));
-        CHANNELS.add(new ChannelItem("cctv_p2p_hdcctv2", "CCTV-2 财经"));
-        CHANNELS.add(new ChannelItem("cctv_p2p_hdcctv3", "CCTV-3 综艺"));
-        CHANNELS.add(new ChannelItem("cctv_p2p_hdcctv4", "CCTV-4 中文国际"));
-        CHANNELS.add(new ChannelItem("cctv_p2p_hdcctv5", "CCTV-5 体育"));
-        CHANNELS.add(new ChannelItem("cctv_p2p_hdcctv5plus", "CCTV-5+ 体育赛事"));
-        CHANNELS.add(new ChannelItem("cctv_p2p_hdcctv6", "CCTV-6 电影"));
-        CHANNELS.add(new ChannelItem("cctv_p2p_hdcctv7", "CCTV-7 国防军事"));
-        CHANNELS.add(new ChannelItem("cctv_p2p_hdcctv8", "CCTV-8 电视剧"));
+        CHANNELS.add(new ChannelItem("cctv_p2p_hdcctv1",    "CCTV-1 综合"));
+        CHANNELS.add(new ChannelItem("cctv_p2p_hdcctv2",    "CCTV-2 财经"));
+        CHANNELS.add(new ChannelItem("cctv_p2p_hdcctv3",    "CCTV-3 综艺"));
+        CHANNELS.add(new ChannelItem("cctv_p2p_hdcctv4",    "CCTV-4 中文国际"));
+        CHANNELS.add(new ChannelItem("cctv_p2p_hdcctv5",    "CCTV-5 体育"));
+        CHANNELS.add(new ChannelItem("cctv_p2p_hdcctv5plus","CCTV-5+ 体育赛事"));
+        CHANNELS.add(new ChannelItem("cctv_p2p_hdcctv6",    "CCTV-6 电影"));
+        CHANNELS.add(new ChannelItem("cctv_p2p_hdcctv7",    "CCTV-7 国防军事"));
+        CHANNELS.add(new ChannelItem("cctv_p2p_hdcctv8",    "CCTV-8 电视剧"));
         CHANNELS.add(new ChannelItem("cctv_p2p_hdcctvjilu", "CCTV-9 纪录"));
-        CHANNELS.add(new ChannelItem("cctv_p2p_hdcctv10", "CCTV-10 科教"));
-        CHANNELS.add(new ChannelItem("cctv_p2p_hdcctv11", "CCTV-11 戏曲"));
-        CHANNELS.add(new ChannelItem("cctv_p2p_hdcctv12", "CCTV-12 社会与法"));
-        CHANNELS.add(new ChannelItem("cctv_p2p_hdcctv13", "CCTV-13 新闻"));
-        CHANNELS.add(new ChannelItem("cctv_p2p_hdcctv14", "CCTV-14 少儿"));
-        CHANNELS.add(new ChannelItem("cctv_p2p_hdcctv15", "CCTV-15 音乐"));
-        CHANNELS.add(new ChannelItem("cctv_p2p_hdcctv16", "CCTV-16 奥林匹克"));
-        CHANNELS.add(new ChannelItem("cctv_p2p_hdcctv17", "CCTV-17 农业农村"));
+        CHANNELS.add(new ChannelItem("cctv_p2p_hdcctv10",   "CCTV-10 科教"));
+        CHANNELS.add(new ChannelItem("cctv_p2p_hdcctv11",   "CCTV-11 戏曲"));
+        CHANNELS.add(new ChannelItem("cctv_p2p_hdcctv12",   "CCTV-12 社会与法"));
+        CHANNELS.add(new ChannelItem("cctv_p2p_hdcctv13",   "CCTV-13 新闻"));
+        CHANNELS.add(new ChannelItem("cctv_p2p_hdcctv14",   "CCTV-14 少儿"));
+        CHANNELS.add(new ChannelItem("cctv_p2p_hdcctv15",   "CCTV-15 音乐"));
+        CHANNELS.add(new ChannelItem("cctv_p2p_hdcctv16",   "CCTV-16 奥林匹克"));
+        CHANNELS.add(new ChannelItem("cctv_p2p_hdcctv17",   "CCTV-17 农业农村"));
     }
 
     // ---- Views ----
@@ -90,10 +97,30 @@ public class MainActivity extends Activity {
     private ChannelAdapter channelAdapter;
     private int currentChannelIndex = 0;
 
-    /** 频道切换防抖：500ms 内多次上下键只解析最后一次 */
-    private final Handler channelSwitchHandler = new Handler(Looper.getMainLooper());
-    private Runnable channelSwitchRunnable;
-    private static final long CHANNEL_SWITCH_DELAY_MS = 500;
+    /**
+     * 防抖 Handler（使用 WeakReference 防止 Activity 泄漏）
+     *
+     * 用 Message 替代 Runnable + 匿名类方案，避免 cancelAll/removeCallbacks 遗留问题
+     */
+    private final Handler channelSwitchHandler = new ChannelDebounceHandler(this);
+
+    private static class ChannelDebounceHandler extends Handler {
+        private final WeakReference<MainActivity> ref;
+
+        ChannelDebounceHandler(MainActivity activity) {
+            super(Looper.getMainLooper());
+            this.ref = new WeakReference<>(activity);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            MainActivity activity = ref.get();
+            if (activity == null || activity.isFinishing()) return;
+            if (msg.what == MSG_LOAD_CHANNEL) {
+                activity.loadChannel(msg.arg1);
+            }
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -122,10 +149,11 @@ public class MainActivity extends Activity {
     }
 
     private void initOkHttpClient() {
-        // 配置 OkHttp：连接超时、读超时
         okHttpClient = new OkHttpClient.Builder()
                 .connectTimeout(15, TimeUnit.SECONDS)
                 .readTimeout(30, TimeUnit.SECONDS)
+                .writeTimeout(15, TimeUnit.SECONDS)
+                .retryOnConnectionFailure(true) // 连接失败自动重试一次
                 .build();
     }
 
@@ -141,14 +169,20 @@ public class MainActivity extends Activity {
         playerManager.setEventListener(new TvPlayerManager.PlayerEventListener() {
             @Override
             public void onPlaybackStarted() {
+                // 播放已开始，确保 loading 消失
                 showLoading(false);
-                Toast.makeText(MainActivity.this, "播放开始", Toast.LENGTH_SHORT).show();
             }
 
             @Override
-            public void onPlaybackError(String errorMsg) {
+            public void onPlaybackError(String errorMsg, TvPlayerManager.ErrorType errorType) {
                 showLoading(false);
                 Toast.makeText(MainActivity.this, errorMsg, Toast.LENGTH_LONG).show();
+                // 网络类错误和流地址失效时，自动清缓存重解析
+                if (errorType == TvPlayerManager.ErrorType.NETWORK
+                        || errorType == TvPlayerManager.ErrorType.INVALID_URL) {
+                    retryCurrentChannel();
+                }
+                // FORMAT_UNSUPPORTED 等不可恢复错误不重试，避免死循环
             }
 
             @Override
@@ -176,19 +210,20 @@ public class MainActivity extends Activity {
 
     /**
      * 防抖加载频道：快速连续上下键时，只加载最终停留的频道
+     *
+     * <p>通过 Handler Message 机制实现：先移除旧消息，再发送新消息，延迟 500ms 执行。
+     * 相比 Runnable 方案，Message 自带 what/arg1 字段更清晰，且不需要持有 Runnable 引用。
      */
     private void scheduleLoadChannel(int index) {
-        if (channelSwitchRunnable != null) {
-            channelSwitchHandler.removeCallbacks(channelSwitchRunnable);
-        }
-        channelSwitchRunnable = () -> loadChannel(index);
-        channelSwitchHandler.postDelayed(channelSwitchRunnable, CHANNEL_SWITCH_DELAY_MS);
+        channelSwitchHandler.removeMessages(MSG_LOAD_CHANNEL);
+        Message msg = channelSwitchHandler.obtainMessage(MSG_LOAD_CHANNEL, index, 0);
+        channelSwitchHandler.sendMessageDelayed(msg, CHANNEL_SWITCH_DELAY_MS);
     }
 
     /**
      * 加载指定频道：解析 m3u8 → 播放
      */
-    private void loadChannel(int index) {
+    void loadChannel(int index) {
         if (index < 0 || index >= CHANNELS.size()) return;
 
         currentChannelIndex = index;
@@ -198,28 +233,30 @@ public class MainActivity extends Activity {
         ChannelItem channel = CHANNELS.get(index);
         tvCurrentChannel.setText(channel.getName());
 
-        // 如果已缓存 m3u8 URL，直接播放
+        // 如果已缓存 m3u8 URL，直接播放（跳过网络请求）
         if (channel.getStreamUrl() != null) {
             playerManager.switchStream(channel.getStreamUrl());
             return;
         }
 
-        // 否则解析 m3u8
+        // 否则先停止当前播放，再解析新频道
+        playerManager.stopAndReset();
         showLoading(true);
+
         String refererKey = extractRefererKey(channel.getChannelId());
         streamParser.parseChannel(channel.getChannelId(), refererKey,
                 new StreamParser.ParseCallback() {
                     @Override
                     public void onSuccess(String streamUrl, boolean isAudioOnly) {
                         showLoading(false);
-                        // 缓存解析结果（音频流不缓存，避免误以为有视频）
+                        // 仅视频流才缓存（音频流不缓存，每次重新解析可能有视频流）
                         if (!isAudioOnly) {
                             channel.setStreamUrl(streamUrl);
                         }
                         playerManager.switchStream(streamUrl);
                         if (isAudioOnly) {
                             Toast.makeText(MainActivity.this,
-                                    channel.getName() + " 当前仅支持音频播放（无画面）",
+                                    channel.getName() + " 当前仅支持音频（无画面）",
                                     Toast.LENGTH_LONG).show();
                         }
                     }
@@ -234,15 +271,29 @@ public class MainActivity extends Activity {
     }
 
     /**
+     * 播放错误时自动重试当前频道（清除缓存后重解析）
+     */
+    private void retryCurrentChannel() {
+        ChannelItem channel = CHANNELS.get(currentChannelIndex);
+        // 清除缓存的流地址，强制重新解析
+        channel.setStreamUrl(null);
+        // 延迟 2s 后重试（避免立刻重试同样失败）
+        channelSwitchHandler.postDelayed(() -> {
+            if (!isFinishing()) {
+                loadChannel(currentChannelIndex);
+            }
+        }, 2000);
+    }
+
+    /**
      * 从 channelId 提取用于 Referer 的频道关键字
      * 例如：cctv_p2p_hdcctv1 → cctv1
      */
     private String extractRefererKey(String channelId) {
-        // cctv_p2p_hdcctv{N} → cctv{N}
         if (channelId.startsWith("cctv_p2p_hd")) {
             return channelId.substring("cctv_p2p_hd".length());
         }
-        return "cctv1"; // 默认
+        return "cctv1";
     }
 
     // ===================== 遥控器按键处理 =====================
@@ -276,19 +327,18 @@ public class MainActivity extends Activity {
                 rvChannelList.requestFocus();
                 return true;
 
-            // 右键/确认：焦点移到播放器区域
+            // 右键/确认：焦点移到播放器区域，或确认切换频道
             case KeyEvent.KEYCODE_DPAD_RIGHT:
             case KeyEvent.KEYCODE_DPAD_CENTER:
             case KeyEvent.KEYCODE_ENTER:
                 if (rvChannelList.hasFocus()) {
-                    // 当前焦点在频道列表：确认键切换频道
                     loadChannel(channelAdapter.getSelectedPosition());
                     playerView.requestFocus();
                     return true;
                 }
                 break;
 
-            // 数字键0-9：快速切换频道
+            // 数字键0-9：快速切换频道（按0→第1频道，按1→第2频道，以此类推）
             case KeyEvent.KEYCODE_0:
             case KeyEvent.KEYCODE_1:
             case KeyEvent.KEYCODE_2:
@@ -302,7 +352,6 @@ public class MainActivity extends Activity {
                 int numIndex = keyCode - KeyEvent.KEYCODE_0;
                 if (numIndex < CHANNELS.size()) {
                     loadChannel(numIndex);
-                    scrollChannelListTo(numIndex);
                 }
                 return true;
 
@@ -313,11 +362,10 @@ public class MainActivity extends Activity {
     }
 
     /**
-     * 通过偏移量切换频道（+1下一个，-1上一个）
+     * 通过偏移量切换频道（+1下一个，-1上一个），支持循环
      */
     private void switchChannelByOffset(int offset) {
         int newIndex = currentChannelIndex + offset;
-        // 循环切换
         if (newIndex < 0) {
             newIndex = CHANNELS.size() - 1;
         } else if (newIndex >= CHANNELS.size()) {
@@ -330,11 +378,10 @@ public class MainActivity extends Activity {
     }
 
     /**
-     * 滚动频道列表到指定位置
+     * 滚动频道列表到指定位置，并让对应条目获取焦点
      */
     private void scrollChannelListTo(int index) {
         rvChannelList.smoothScrollToPosition(index);
-        // 让对应条目获取焦点
         RecyclerView.ViewHolder vh = rvChannelList.findViewHolderForAdapterPosition(index);
         if (vh != null) {
             vh.itemView.requestFocus();
@@ -370,6 +417,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        // 清除所有待执行的 Handler 消息，防止 Activity 销毁后回调
         channelSwitchHandler.removeCallbacksAndMessages(null);
         if (playerManager != null) {
             playerManager.release();
