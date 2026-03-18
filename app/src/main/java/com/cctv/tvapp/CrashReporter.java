@@ -313,10 +313,12 @@ public class CrashReporter {
                     os.write(logContent.getBytes(StandardCharsets.UTF_8));
                     os.flush();
                     Log.d(TAG, "MediaStore log written: " + fileUri);
+                    android.widget.Toast.makeText(appContext, "日志已保存到 " + fileUri, android.widget.Toast.LENGTH_LONG).show();
                 }
             }
         } catch (Exception e) {
             Log.e(TAG, "writeViaMediaStore failed: " + e.getMessage());
+            android.widget.Toast.makeText(appContext, "日志保存失败: " + e.getMessage(), android.widget.Toast.LENGTH_LONG).show();
             writeViaFileFallback(logContent);
         }
     }
@@ -339,6 +341,7 @@ public class CrashReporter {
     private void writeViaFileFallback(String logContent) {
         File dir = new File(appContext.getFilesDir(), "crash_logs");
         if (!dir.exists()) dir.mkdirs();
+        android.widget.Toast.makeText(appContext, "日志已保存到内部私有目录", android.widget.Toast.LENGTH_LONG).show();
         writeToFileImpl(new File(dir, getTodayFileName()), logContent);
     }
 

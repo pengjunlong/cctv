@@ -79,9 +79,11 @@ public class GitHubIssueSender implements ReportSender {
                     // 提取 issue html_url 打印日志
                     String issueUrl = extractHtmlUrl(responseBody);
                     Log.i(TAG, "GitHub Issue 创建成功: " + issueUrl);
+                    android.widget.Toast.makeText(context, "GitHub Issue 创建成功: " + issueUrl, android.widget.Toast.LENGTH_LONG).show();
                 } else {
                     String responseBody = response.body() != null ? response.body().string() : "";
                     Log.w(TAG, "GitHub Issue 创建失败: HTTP " + code + " " + responseBody);
+                    android.widget.Toast.makeText(context, "GitHub Issue 创建失败: HTTP " + code + " " + responseBody, android.widget.Toast.LENGTH_LONG).show();
                     // 抛出 ReportSenderException 通知 ACRA 可以重试
                     throw new ReportSenderException("GitHub API 返回 " + code + ": " + responseBody);
                 }
