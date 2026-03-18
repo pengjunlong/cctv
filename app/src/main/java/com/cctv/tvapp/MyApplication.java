@@ -15,7 +15,7 @@ import org.acra.data.StringFormat;
  * <ol>
  *   <li><b>ACRA</b>：全局崩溃捕获，通过自定义 {@link GitHubIssueSender}
  *       将崩溃报告自动创建为 GitHub Issues。</li>
- *   <li><b>CrashReporter</b>：本地日志持久化，写入 Downloads/CctvTvApp/crash_logs/
+ *   <li><b>CrashReporter</b>：本地日志持久化，写入 Downloads/cctv/crash_logs/
  *       供离线分析。</li>
  * </ol>
  *
@@ -37,7 +37,7 @@ public class MyApplication extends android.app.Application {
     /** GitHub 仓库 owner */
     private static final String GITHUB_OWNER = "pengjunlong";
     /** GitHub 仓库名 */
-    private static final String GITHUB_REPO  = "CctvTvApp";
+    private static final String GITHUB_REPO  = "cctv";
     /**
      * GitHub PAT，由 CI 通过环境变量注入 BuildConfig.CRASH_REPORT_TOKEN。
      * 本地调试时为空字符串，崩溃上报功能不可用但不影响应用运行。
@@ -71,7 +71,7 @@ public class MyApplication extends android.app.Application {
     public void onCreate() {
         super.onCreate();
 
-        // 3. 初始化本地日志（写入 Downloads/CctvTvApp/crash_logs/）
+        // 3. 初始化本地日志（写入 Downloads/cctv/crash_logs/）
         CrashReporter.init(this);
 
         // 4. 安装全局崩溃捕获：崩溃时启动 CrashDisplayActivity 展示完整错误栈

@@ -49,7 +49,7 @@ jobs:
         fi
         echo "VERSION_NAME=$V_NAME" >> $GITHUB_ENV
         echo "VERSION_CODE=$V_CODE" >> $GITHUB_ENV
-        echo "APK_BASENAME=CctvTvApp-${V_NAME}-arm64" >> $GITHUB_ENV
+        echo "APK_BASENAME=cctv-${V_NAME}-arm64" >> $GITHUB_ENV
         echo "::notice::Building version $V_NAME (code $V_CODE, arch arm64-v8a)"
 
     # 将 Base64 编码的 keystore 写入临时文件
@@ -105,7 +105,7 @@ jobs:
     - name: Download Release APK
       uses: actions/download-artifact@v4
       with:
-        name: CctvTvApp-${{ steps.ver.outputs.VERSION }}-arm64
+        name: cctv-${{ steps.ver.outputs.VERSION }}-arm64
         path: ./artifacts
 
     - name: Create GitHub Release

@@ -33,7 +33,7 @@ public class GitHubIssueSender implements ReportSender {
 
     /** GitHub 仓库 owner，如 "pengjunlong" */
     private final String owner;
-    /** GitHub 仓库名，如 "CctvTvApp" */
+    /** GitHub 仓库名，如 "cctv" */
     private final String repo;
     /**
      * GitHub Personal Access Token（PAT）。
@@ -136,7 +136,7 @@ public class GitHubIssueSender implements ReportSender {
             sb.append("\n```\n</details>\n");
         }
 
-        sb.append("\n---\n*由 CctvTvApp ACRA 自动创建*");
+        sb.append("\n---\n*由 cctv ACRA 自动创建*");
         return sb.toString();
     }
 
@@ -208,7 +208,7 @@ public class GitHubIssueSender implements ReportSender {
     public static class Config {
         /** GitHub 用户名或组织名，如 "pengjunlong" */
         public final String owner;
-        /** GitHub 仓库名，如 "CctvTvApp" */
+        /** GitHub 仓库名，如 "cctv" */
         public final String repo;
         /**
          * GitHub Personal Access Token（PAT）。

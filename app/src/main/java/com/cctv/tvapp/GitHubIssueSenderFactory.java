@@ -20,7 +20,7 @@ import org.acra.sender.ReportSenderFactory;
  * <p>配置方式：在 {@code BuildConfig} 中定义以下字段（推荐通过 {@code build.gradle} 注入）：
  * <pre>
  *   BuildConfig.GITHUB_OWNER  = "pengjunlong"
- *   BuildConfig.GITHUB_REPO   = "CctvTvApp"
+ *   BuildConfig.GITHUB_REPO   = "cctv"
  *   BuildConfig.GITHUB_TOKEN  = "ghp_xxxx"  // PAT，Issues: Write 权限
  * </pre>
  *

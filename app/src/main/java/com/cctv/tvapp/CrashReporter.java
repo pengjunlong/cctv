@@ -42,7 +42,7 @@ import java.util.concurrent.Executors;
  *
  * <p>功能：
  * <ul>
- *   <li>将事件/异常写入本地文件（Downloads/CctvTvApp/crash_logs/）供离线分析。</li>
+ *   <li>将事件/异常写入本地文件（Downloads/cctv/crash_logs/）供离线分析。</li>
  *   <li>对于 error/crash，同时通过 {@code ACRA.getErrorReporter().handleSilentException()}
  *       触发 ACRA 上报到 GitHub Issues。</li>
  * </ul>
@@ -52,7 +52,7 @@ import java.util.concurrent.Executors;
  *
  * <p>日志文件位置：
  * <ul>
- *   <li>Android 10+：{@code Downloads/CctvTvApp/crash_logs/log_yyyyMMdd.txt}（文件管理器可见）</li>
+ *   <li>Android 10+：{@code Downloads/cctv/crash_logs/log_yyyyMMdd.txt}（文件管理器可见）</li>
  *   <li>Android 6~9：同上（需 WRITE_EXTERNAL_STORAGE 权限）</li>
  *   <li>降级：{@code /data/data/com.cctv.tvapp/files/crash_logs/}（需 adb）</li>
  * </ul>
@@ -72,7 +72,7 @@ public class CrashReporter {
 
     private static final String TAG = "CrashReporter";
 
-    private static final String LOG_SUB_DIR   = "CctvTvApp/crash_logs";
+    private static final String LOG_SUB_DIR   = "cctv/crash_logs";
     private static final int    MAX_LOG_LINES = 2000;
     private static final int    MAX_LOG_FILES = 10;
 

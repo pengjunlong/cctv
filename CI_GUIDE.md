@@ -48,8 +48,8 @@ git push origin v1.0.0
 
 | 文件名 | 说明 |
 |-------|------|
-| `CctvTvApp-{version}-debug.apk` | Debug 版本（含调试符号，体积较大） |
-| `CctvTvApp-{version}-release-unsigned.apk` | Release 版本（未签名，体积小） |
+| `cctv-{version}-debug.apk` | Debug 版本（含调试符号，体积较大） |
+| `cctv-{version}-release-unsigned.apk` | Release 版本（未签名，体积小） |
 
 > **注意**: Release APK 为 **unsigned**（未签名），可直接安装到开发者模式的设备。
 > 若需上架应用市场，需使用 keystore 签名（可通过 GitHub Secrets 配置）。
