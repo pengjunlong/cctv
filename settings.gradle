@@ -1,0 +1,25 @@
+pluginManagement {
+    repositories {
+        google {
+            content {
+                includeGroupByRegex("com\\.android.*")
+                includeGroupByRegex("com\\.google.*")
+                includeGroupByRegex("androidx.*")
+            }
+        }
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        // Mozilla GeckoView（Firefox 引擎，打包进 APK，不依赖系统 WebView）
+        maven { url = uri("https://maven.mozilla.org/maven2") }
+    }
+}
+
+rootProject.name = "CctvTvApp"
+include ':app'

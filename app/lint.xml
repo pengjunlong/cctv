@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <!-- Media3 UnstableApi 警告：我们使用的是 Media3 稳定功能，无需额外标记 -->
+    <issue id="UnsafeOptInUsageError" severity="ignore" />
+    <issue id="RestrictedApi" severity="warning" />
+</lint>
+

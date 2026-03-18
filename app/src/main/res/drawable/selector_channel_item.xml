@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    频道列表条目背景 Selector
+    TV 遥控器焦点状态对应 state_focused
+    已选中频道对应 state_selected（activated）
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- 获得焦点时（遥控器方向键移动到此条目）-->
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/channel_item_focused" />
+            <corners android:radius="4dp" />
+        </shape>
+    </item>
+
+    <!-- 已选中（当前正在播放的频道）-->
+    <item android:state_selected="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/channel_item_selected" />
+            <corners android:radius="4dp" />
+        </shape>
+    </item>
+
+    <!-- activated 状态（与 selected 一致）-->
+    <item android:state_activated="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/channel_item_selected" />
+            <corners android:radius="4dp" />
+        </shape>
+    </item>
+
+    <!-- 普通状态 -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/channel_item_normal" />
+        </shape>
+    </item>
+
+</selector>
+

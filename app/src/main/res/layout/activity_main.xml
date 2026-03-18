@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    主界面布局（GeckoView 全屏版）
+    GeckoView（Firefox 引擎）全屏播放，频道列表作为浮层覆盖在左侧
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/black">
+
+    <!-- GeckoView 全屏播放区（占满全屏，Firefox 引擎，不依赖系统 WebView） -->
+    <org.mozilla.geckoview.GeckoView
+        android:id="@+id/web_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:focusable="true"
+        android:focusableInTouchMode="true" />
+
+    <!-- 加载遮罩（WebView 加载中显示） -->
+    <FrameLayout
+        android:id="@+id/loading_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/bg_loading"
+        android:visibility="gone"
+        android:clickable="false">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <ProgressBar
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:indeterminate="true"
+                android:indeterminateTint="@color/white" />
+
+            <TextView
+                android:id="@+id/tv_loading_hint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="正在加载..."
+                android:textColor="@color/white"
+                android:textSize="16sp" />
+
+        </LinearLayout>
+
+    </FrameLayout>
+
+    <!-- 频道列表侧边栏浮层（默认隐藏，遥控器呼出） -->
+    <LinearLayout
+        android:id="@+id/panel_channel"
+        android:layout_width="220dp"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="@color/bg_sidebar"
+        android:visibility="gone">
+
+        <!-- 标题栏 -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:gravity="center"
+            android:text="频道列表"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:background="@color/color_primary" />
+
+        <!-- 当前频道名 -->
+        <TextView
+            android:id="@+id/tv_current_channel"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:textColor="@color/text_normal"
+            android:textSize="13sp"
+            android:background="@color/bg_main"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <!-- 频道列表 -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_channel_list"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:descendantFocusability="afterDescendants"
+            android:scrollbars="none"
+            android:overScrollMode="never" />
+
+    </LinearLayout>
+
+</FrameLayout>

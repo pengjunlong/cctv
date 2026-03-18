@@ -1,0 +1,147 @@
+name: Android CI
+
+on:
+  push:
+    tags:
+      - 'v*'
+  # 支持手动触发
+  workflow_dispatch:
+
+# 全局权限声明
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        # 缓存 Gradle 依赖，加快构建速度
+        cache: gradle
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+
+    # 从 git tag / commit 自动推断版本号，注入 build.gradle
+    - name: Extract version info
+      id: version
+      run: |
+        if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+          # Tag 构建： v1.2.3 → versionName=1.2.3, versionCode=10203
+          RAW="${GITHUB_REF#refs/tags/v}"
+          MAJOR=$(echo "$RAW" | cut -d. -f1)
+          MINOR=$(echo "$RAW" | cut -d. -f2)
+          PATCH=$(echo "$RAW" | cut -d. -f3 || echo "0")
+          V_NAME="$RAW"
+          V_CODE=$(( MAJOR * 10000 + MINOR * 100 + PATCH ))
+        else
+          # 手动触发: 使用 CI 运行编号
+          V_NAME="dev-$(git rev-parse --short HEAD)"
+          V_CODE="${GITHUB_RUN_NUMBER}"
+        fi
+        echo "VERSION_NAME=$V_NAME" >> $GITHUB_ENV
+        echo "VERSION_CODE=$V_CODE" >> $GITHUB_ENV
+        echo "APK_BASENAME=CctvTvApp-${V_NAME}-arm64" >> $GITHUB_ENV
+        echo "::notice::Building version $V_NAME (code $V_CODE, arch arm64-v8a)"
+
+    # 将 Base64 编码的 keystore 写入临时文件
+    - name: Write keystore file
+      run: |
+        echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > $RUNNER_TEMP/keystore.jks
+
+    - name: Build & Sign Release APK
+      run: ./gradlew assembleRelease --stacktrace
+      env:
+        VERSION_NAME: ${{ env.VERSION_NAME }}
+        VERSION_CODE: ${{ env.VERSION_CODE }}
+        KEYSTORE_PATH: ${{ runner.temp }}/keystore.jks
+        KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
+        KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        CRASH_REPORT_TOKEN: ${{ secrets.CRASH_REPORT_TOKEN }}
+
+    # 重命名带版本号
+    - name: Rename output APK
+      run: |
+        # 签名后文件名为 app-arm64-v8a-release.apk（无 unsigned 后缀）
+        RELEASE_SRC=$(ls app/build/outputs/apk/release/*.apk 2>/dev/null | grep -v unsigned | head -1)
+        # 兼容未签名情况
+        if [ -z "$RELEASE_SRC" ]; then
+          RELEASE_SRC=$(ls app/build/outputs/apk/release/*.apk 2>/dev/null | head -1)
+        fi
+        if [ -n "$RELEASE_SRC" ]; then
+          cp "$RELEASE_SRC" app/build/outputs/apk/release/${{ env.APK_BASENAME }}.apk
+          echo "APK: $RELEASE_SRC → ${{ env.APK_BASENAME }}.apk"
+        else
+          echo "::error::Release APK not found!"
+          ls -la app/build/outputs/apk/release/ || true
+          exit 1
+        fi
+
+    - name: Upload Release APK artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.APK_BASENAME }}
+        path: app/build/outputs/apk/release/${{ env.APK_BASENAME }}.apk
+        retention-days: 30
+
+  # 自动发布 Release
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Get version from tag
+      id: ver
+      run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+    - name: Download Release APK
+      uses: actions/download-artifact@v4
+      with:
+        name: CctvTvApp-${{ steps.ver.outputs.VERSION }}-arm64
+        path: ./artifacts
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: v${{ steps.ver.outputs.VERSION }}
+        name: "CCTV TV App v${{ steps.ver.outputs.VERSION }}"
+        body: |
+          ## CCTV TV App v${{ steps.ver.outputs.VERSION }}
+
+          ### 功能特性
+          - ✅ 支持央视 CCTV-1 至 CCTV-17 全频道直播
+          - ✅ 内置 GeckoView（Firefox 140 引擎)，不依赖系统 WebView
+          - ✅ Android TV 遥控器适配（上下键切换频道，MENU 键呼出频道列表）
+          - ✅ 自动从 tv.cctv.com 抓取频道列表，支持离线备用列表
+          - ✅ 视频自动全屏，隐藏网页其他元素
+          - ✅ 触屏交互支持（点击左侧唤起列表、点击频道切换）
+          - ✅ 自动播放 + 有声音
+
+          ### 架构说明
+          - 📦 本 APK 仅包含 **arm64-v8a** 架构（适用于绝大多数现代 Android TV 盒子)
+
+          ### 系统要求
+          - Android 5.0 (API 21) 及以上
+          - 推荐 Android TV / 电视盒子设备(arm64 架构)
+
+          ### 安装说明
+          1. 下载下方 `.apk` 文件
+          2. 传输到 Android TV 设备（U盘、ADB 或文件管理器）
+          3. 允许安装未知来源后安装即可
+
+          ---
+          > 本应用仅供学习交流使用。
+        files: artifacts/*.apk
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
