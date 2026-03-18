@@ -28,7 +28,7 @@ import org.acra.data.StringFormat;
  */
 public class MyApplication extends android.app.Application {
 
-    private static final String TAG = "CctvApp";
+    private static final String TAG = "cctvApp";
 
     // =========================================================
     // GitHub Issues 配置
