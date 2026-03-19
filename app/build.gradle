@@ -66,6 +66,13 @@ dependencies {
     // GeckoView：Mozilla Firefox 引擎，打包进 APK，完全不依赖系统 WebView
     implementation 'org.mozilla.geckoview:geckoview:140.0.20250707120347'
 
+    // Crosswalk（XWalkView）：内置 Chromium 引擎，独立于系统 WebView
+    // 原 Maven 仓库（download.01.org）已下线，AAR 存放于 app/libs/ 目录
+    // 文件来源：Web Archive 存档的原始 23.53.589.4（对应 Chromium 53）
+    // 注意：Crosswalk 已停止维护（2019），仅支持 Android ≤ 7.0；
+    //       Android 8+ 设备上 CrosswalkPlayerActivity 会自动降级到系统 WebView
+    implementation files('libs/xwalk_core_library-23.53.589.4.aar')
+
     // OkHttp：用于频道列表 HTTP 抓取 + GitHub Issues API 上报
     implementation 'com.squareup.okhttp3:okhttp:4.12.0'
 

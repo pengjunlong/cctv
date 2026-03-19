@@ -33,3 +33,6 @@ google-services.json
 
 # Android Profiling
 *.hprof
+
+# 大体积本地 AAR（通过 CI 脚本自动下载，不提交到仓库）
+app/libs/*.aar

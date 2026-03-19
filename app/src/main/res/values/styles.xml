@@ -9,7 +9,7 @@
         <item name="android:windowActionBar">false</item>
     </style>
 
-    <!-- 全屏主题（用于 MainActivity，隐藏状态栏和导航栏）-->
+    <!-- 全屏主题（用于播放器 Activity，隐藏状态栏和导航栏）-->
     <style name="AppTheme.FullScreen" parent="AppTheme">
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowContentOverlay">@null</item>

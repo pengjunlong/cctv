@@ -28,25 +28,73 @@
         android:usesCleartextTraffic="true"
         android:hardwareAccelerated="false">
 
+        <!--
+            ══════════════════════════════════════════════════════
+            引擎选择界面（App 入口，LAUNCHER）
+            每次启动时显示，让用户选择播放引擎：
+              1. GeckoView（Firefox 引擎） → GeckoPlayerActivity
+              2. Crosswalk（Chromium 引擎）→ CrosswalkPlayerActivity
+              3. 系统 WebView              → SystemWebViewPlayerActivity
+            ══════════════════════════════════════════════════════
+        -->
         <activity
-            android:name=".MainActivity"
+            android:name=".EngineSelectActivity"
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden"
             android:exported="true"
             android:screenOrientation="landscape"
             android:theme="@style/AppTheme.FullScreen">
 
-            <!-- 主屏幕启动 -->
+            <!-- 主屏幕启动入口 -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- TV 主屏幕启动 -->
+            <!-- TV 主屏幕启动入口 -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!--
+            ══════════════════════════════════════════════════════
+            GeckoView 播放器（Mozilla Firefox 引擎）
+            ══════════════════════════════════════════════════════
+        -->
+        <activity
+            android:name=".GeckoPlayerActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden"
+            android:exported="false"
+            android:screenOrientation="landscape"
+            android:theme="@style/AppTheme.FullScreen" />
+
+        <!--
+            ══════════════════════════════════════════════════════
+            Crosswalk 播放器（XWalkView，Chromium 引擎）
+            注意：Crosswalk 已停止维护，仅支持 Android ≤ 7.0
+                  若 Crosswalk AAR 未包含，会自动降级到系统 WebView
+            ══════════════════════════════════════════════════════
+        -->
+        <activity
+            android:name=".CrosswalkPlayerActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden"
+            android:exported="false"
+            android:screenOrientation="landscape"
+            android:theme="@style/AppTheme.FullScreen" />
+
+        <!--
+            ══════════════════════════════════════════════════════
+            系统 WebView 播放器（Android 原生 WebView）
+            轻量快速，依赖系统 WebView 版本
+            ══════════════════════════════════════════════════════
+        -->
+        <activity
+            android:name=".SystemWebViewPlayerActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden"
+            android:exported="false"
+            android:screenOrientation="landscape"
+            android:theme="@style/AppTheme.FullScreen" />
 
         <!-- 崩溃/错误展示页：全屏显示完整错误栈，方便设备上直接查看 -->
         <activity

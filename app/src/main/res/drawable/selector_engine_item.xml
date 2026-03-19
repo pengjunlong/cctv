@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    引擎选项条目的状态选择器
+    - 获取焦点（遥控器）→ 高亮红色背景
+    - 按下（触屏）→ 深红色背景
+    - 普通状态 → 透明背景
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_pressed="true">
+        <color android:color="@color/channel_item_selected" />
+    </item>
+    <item android:state_focused="true">
+        <color android:color="@color/channel_item_focused" />
+    </item>
+    <item android:state_selected="true">
+        <color android:color="@color/channel_item_focused" />
+    </item>
+    <item>
+        <color android:color="@android:color/transparent" />
+    </item>
+</selector>
+

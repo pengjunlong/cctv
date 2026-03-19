@@ -57,6 +57,22 @@ jobs:
       run: |
         echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > $RUNNER_TEMP/keystore.jks
 
+    # 下载 Crosswalk AAR（原 Maven 仓库已下线，从 Web Archive 获取）
+    # AAR 体积 ~48MB，不提交到 git，CI 构建时自动下载
+    - name: Download Crosswalk AAR
+      run: |
+        mkdir -p app/libs
+        ARCHIVE_URL="https://web.archive.org/web/20240711212555/https://download.01.org/crosswalk/releases/crosswalk/android/maven2/org/xwalk/xwalk_core_library/23.53.589.4/xwalk_core_library-23.53.589.4.aar"
+        AAR_PATH="app/libs/xwalk_core_library-23.53.589.4.aar"
+        echo "正在下载 Crosswalk AAR..."
+        curl -L --retry 3 --retry-delay 5 -o "$AAR_PATH" "$ARCHIVE_URL"
+        AAR_SIZE=$(stat -c%s "$AAR_PATH" 2>/dev/null || stat -f%z "$AAR_PATH")
+        echo "下载完成，文件大小: ${AAR_SIZE} bytes"
+        if [ "$AAR_SIZE" -lt 10000000 ]; then
+          echo "::error::Crosswalk AAR 文件大小异常（< 10MB），下载可能失败"
+          exit 1
+        fi
+
     - name: Build & Sign Release APK
       run: ./gradlew assembleRelease --stacktrace
       env:
@@ -118,8 +134,11 @@ jobs:
 
           ### 功能特性
           - ✅ 支持央视 CCTV-1 至 CCTV-17 全频道直播
-          - ✅ 内置 GeckoView（Firefox 140 引擎)，不依赖系统 WebView
-          - ✅ Android TV 遥控器适配（上下键切换频道，MENU 键呼出频道列表）
+          - ✅ 启动时可选播放引擎（选择记住后下次直接进入）
+            - 🦊 **GeckoView**（Firefox 140 引擎）— 推荐，最佳兼容性
+            - 🔵 **Crosswalk**（内置 Chromium 引擎）— 适合 Android 7 及以下
+            - 🟢 **系统 WebView** — 轻量，依赖系统版本
+          - ✅ Android TV 遥控器适配（上下键切换频道，MENU 键返回引擎选择）
           - ✅ 自动从 tv.cctv.com 抓取频道列表，支持离线备用列表
           - ✅ 视频自动全屏，隐藏网页其他元素
           - ✅ 触屏交互支持（点击左侧唤起列表、点击频道切换）
