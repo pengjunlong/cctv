@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!--
+        GeckoView 148 内部声明了 minSdkVersion 26，但本项目 minSdk=23 需要支持 Android 5/6 的旧盒子。
+        我们已在 GeckoPlayerActivity.onCreate() 中做了版本检测：API < 26 时自动跳转 CrosswalkPlayerActivity，
+        因此在旧设备上 GeckoView 代码路径永远不会被执行，强制覆盖是安全的。
+    -->
+    <uses-sdk tools:overrideLibrary="org.mozilla.geckoview,org.mozilla.geckoview.thirdparty" />
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -26,7 +34,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"
-        android:hardwareAccelerated="false">
+        android:hardwareAccelerated="true">
 
         <!--
             ══════════════════════════════════════════════════════

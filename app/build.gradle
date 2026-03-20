@@ -8,13 +8,25 @@ android {
 
     defaultConfig {
         applicationId "com.cctv.tvapp"
-        minSdk 21
+        minSdk 23
         targetSdk 36
         // CI 通过环境变量 VERSION_CODE / VERSION_NAME 注入版本号
         versionCode Integer.parseInt(System.getenv("VERSION_CODE") ?: "1")
         versionName System.getenv("VERSION_NAME") ?: "1.0"
         // GitHub PAT：由 CI 环境变量注入，本地留空（崩溃上报不可用但不崩溃）
         buildConfigField "String", "CRASH_REPORT_TOKEN", "\"${System.getenv("CRASH_REPORT_TOKEN") ?: ""}\""
+
+        // 同时打入 arm64-v8a 和 armeabi-v7a：
+        //   GeckoView 148 提供 arm64-v8a，Crosswalk 只有 armeabi-v7a。
+        //   若 APK 只含 arm64 目录，系统以纯 64 位模式运行，无法加载 Crosswalk 的 32 位 .so；
+        //   同时含两套 ABI 时，64 位系统优先用 arm64 跑 GeckoView，
+        //   Crosswalk 找不到 arm64 版本会自动回退到 armeabi-v7a（32 位兼容模式）。
+        ndk {
+            // arm64-v8a：现代 Android TV 盒子 + GeckoView 148
+            // armeabi-v7a：旧版 32 位盒子（Android 6/7）+ Crosswalk
+            // x86：Android Studio x86 模拟器调试用（Crosswalk AAR 含 x86 .so）
+            abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86'
+        }
     }
 
     signingConfigs {
@@ -32,16 +44,6 @@ android {
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
-        }
-    }
-
-    // APK Split 配置：按架构分别打包，减小单个 APK 体积
-    splits {
-        abi {
-            enable true
-            reset()
-            include 'arm64-v8a'
-            universalApk false
         }
     }
 
@@ -64,7 +66,7 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
 
     // GeckoView：Mozilla Firefox 引擎，打包进 APK，完全不依赖系统 WebView
-    implementation 'org.mozilla.geckoview:geckoview:140.0.20250707120347'
+    implementation 'org.mozilla.geckoview:geckoview:148.0.20260309125808'
 
     // Crosswalk（XWalkView）：内置 Chromium 引擎，独立于系统 WebView
     // 原 Maven 仓库（download.01.org）已下线，AAR 存放于 app/libs/ 目录

@@ -1,328 +1,368 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    引擎选择界面布局
-    APP 首次启动 / 每次启动时弹出，供用户选择播放引擎
+    引擎选择界面布局（重新设计）
+    全屏深色渐变背景，顶部品牌标题 + 中央三卡片横排布局
+    TV 遥控器友好：上下键切换行，左右键切换卡片
 -->
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_main">
+    android:orientation="vertical"
+    android:background="@drawable/bg_engine_select"
+    android:gravity="center">
 
-    <!-- 半透明黑色蒙层（TV 风格弹窗背景） -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#CC000000" />
-
-    <!-- 居中卡片容器 -->
+    <!-- ══ 顶部标题区 ══ -->
     <LinearLayout
-        android:layout_width="480dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
         android:orientation="vertical"
-        android:background="@color/bg_sidebar"
-        android:padding="0dp">
+        android:gravity="center"
+        android:layout_marginBottom="32dp">
 
-        <!-- 标题栏 -->
+        <!-- App 品牌名 -->
         <TextView
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:gravity="center"
-            android:text="选择播放引擎"
-            android:textColor="@color/white"
-            android:textSize="20sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="📺  CCTV 直播"
+            android:textColor="#FFFFFF"
+            android:textSize="28sp"
             android:textStyle="bold"
-            android:background="@color/color_primary" />
+            android:letterSpacing="0.05" />
 
         <!-- 副标题 -->
         <TextView
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:paddingTop="16dp"
-            android:paddingBottom="8dp"
-            android:paddingStart="24dp"
-            android:paddingEnd="24dp"
-            android:text="请选择用于播放央视直播的浏览器引擎"
-            android:textColor="@color/text_normal"
-            android:textSize="14sp" />
-
-        <!-- 分隔线 -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
             android:layout_marginTop="8dp"
-            android:layout_marginBottom="4dp"
-            android:layout_marginStart="24dp"
-            android:layout_marginEnd="24dp"
-            android:background="#444444" />
+            android:text="请选择播放引擎"
+            android:textColor="#88AABBCC"
+            android:textSize="14sp"
+            android:letterSpacing="0.1" />
 
-        <!-- ── 选项 1：GeckoView ── -->
+        <!-- 装饰线 -->
+        <View
+            android:layout_width="48dp"
+            android:layout_height="2dp"
+            android:layout_marginTop="12dp"
+            android:background="#CC0000" />
+
+    </LinearLayout>
+
+    <!-- ══ 三卡片横排区 ══ -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <!-- ── 卡片 1：GeckoView ── -->
         <LinearLayout
             android:id="@+id/btn_gecko"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
+            android:layout_width="200dp"
+            android:layout_height="270dp"
+            android:orientation="vertical"
+            android:gravity="center"
             android:padding="20dp"
-            android:gravity="center_vertical"
             android:focusable="true"
             android:focusableInTouchMode="true"
             android:clickable="true"
-            android:background="@drawable/selector_engine_item">
+            android:background="@drawable/selector_card_gecko">
 
-            <!-- 图标区域 -->
+            <!-- 圆形图标 -->
             <FrameLayout
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="@color/color_primary">
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:background="@drawable/icon_gecko">
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:text="FF"
-                    android:textColor="@color/white"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
+                    android:text="🦊"
+                    android:textSize="30sp" />
             </FrameLayout>
 
-            <!-- 文字区域 -->
-            <LinearLayout
-                android:layout_width="0dp"
+            <!-- 引擎名 -->
+            <TextView
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="GeckoView"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:gravity="center" />
+
+            <!-- 技术说明 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Firefox 引擎"
+                android:textColor="#FFAA88"
+                android:textSize="12sp"
+                android:gravity="center" />
+
+            <!-- 推荐角标 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"
+                android:text="推荐"
+                android:textColor="#FFFFFF"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_badge_recommend" />
+
+            <!-- 系统要求 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Android 8+"
+                android:textColor="#66888888"
+                android:textSize="11sp"
+                android:gravity="center" />
+
+            <!-- 副标题（兼容提示，由代码动态更新） -->
+            <TextView
+                android:id="@+id/tv_gecko_subtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
                 android:layout_weight="1"
-                android:layout_marginStart="16dp"
-                android:orientation="vertical">
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="GeckoView（Firefox 引擎）"
-                        android:textColor="@color/white"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
-
-                    <!-- 推荐角标 -->
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:paddingStart="6dp"
-                        android:paddingEnd="6dp"
-                        android:paddingTop="2dp"
-                        android:paddingBottom="2dp"
-                        android:text="推荐"
-                        android:textColor="@color/white"
-                        android:textSize="10sp"
-                        android:background="@color/color_accent" />
-
-                </LinearLayout>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="不依赖系统 WebView · 内置 Firefox 引擎 · 最佳兼容性"
-                    android:textColor="@color/text_normal"
-                    android:textSize="12sp" />
-            </LinearLayout>
+                android:layout_marginTop="4dp"
+                android:text=""
+                android:textColor="#AAFF8888"
+                android:textSize="11sp"
+                android:gravity="center"
+                android:visibility="gone" />
 
             <!-- 选中指示器 -->
             <View
                 android:id="@+id/indicator_gecko"
-                android:layout_width="8dp"
-                android:layout_height="8dp"
-                android:background="@color/color_accent"
+                android:layout_width="32dp"
+                android:layout_height="3dp"
+                android:layout_marginTop="8dp"
+                android:background="#CC0000"
                 android:visibility="gone" />
 
         </LinearLayout>
 
-        <!-- 分隔线 -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginStart="24dp"
-            android:layout_marginEnd="24dp"
-            android:background="#333333" />
+        <!-- 卡片间距 -->
+        <View android:layout_width="16dp" android:layout_height="1dp" />
 
-        <!-- ── 选项 2：Crosswalk ── -->
+        <!-- ── 卡片 2：Crosswalk ── -->
         <LinearLayout
             android:id="@+id/btn_crosswalk"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
+            android:layout_width="200dp"
+            android:layout_height="270dp"
+            android:orientation="vertical"
+            android:gravity="center"
             android:padding="20dp"
-            android:gravity="center_vertical"
             android:focusable="true"
             android:focusableInTouchMode="true"
             android:clickable="true"
-            android:background="@drawable/selector_engine_item">
+            android:background="@drawable/selector_card_crosswalk">
 
-            <!-- 图标区域 -->
+            <!-- 圆形图标 -->
             <FrameLayout
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="#1565C0">
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:background="@drawable/icon_crosswalk">
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:text="XW"
-                    android:textColor="@color/white"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
+                    android:text="🔵"
+                    android:textSize="30sp" />
             </FrameLayout>
 
-            <!-- 文字区域 -->
-            <LinearLayout
-                android:layout_width="0dp"
+            <!-- 引擎名 -->
+            <TextView
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Crosswalk"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:gravity="center" />
+
+            <!-- 技术说明 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Chromium 内核"
+                android:textColor="#88BBFF"
+                android:textSize="12sp"
+                android:gravity="center" />
+
+            <!-- 兼容标签 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"
+                android:text="旧设备"
+                android:textColor="#FFFFFF"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:background="#1565C0" />
+
+            <!-- 系统要求 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Android ≤ 7"
+                android:textColor="#66888888"
+                android:textSize="11sp"
+                android:gravity="center" />
+
+            <!-- 副标题（兼容提示，由代码动态更新） -->
+            <TextView
+                android:id="@+id/tv_crosswalk_subtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
                 android:layout_weight="1"
-                android:layout_marginStart="16dp"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Crosswalk（Chromium 引擎）"
-                    android:textColor="@color/white"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="内置 Chromium 内核 · 适合 Android 7 及以下"
-                    android:textColor="@color/text_normal"
-                    android:textSize="12sp" />
-            </LinearLayout>
+                android:layout_marginTop="4dp"
+                android:text=""
+                android:textColor="#AAFF8888"
+                android:textSize="11sp"
+                android:gravity="center"
+                android:visibility="gone" />
 
             <!-- 选中指示器 -->
             <View
                 android:id="@+id/indicator_crosswalk"
-                android:layout_width="8dp"
-                android:layout_height="8dp"
-                android:background="@color/color_accent"
+                android:layout_width="32dp"
+                android:layout_height="3dp"
+                android:layout_marginTop="8dp"
+                android:background="#2979FF"
                 android:visibility="gone" />
 
         </LinearLayout>
 
-        <!-- 分隔线 -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginStart="24dp"
-            android:layout_marginEnd="24dp"
-            android:background="#333333" />
+        <!-- 卡片间距 -->
+        <View android:layout_width="16dp" android:layout_height="1dp" />
 
-        <!-- ── 选项 3：系统 WebView ── -->
+        <!-- ── 卡片 3：系统 WebView ── -->
         <LinearLayout
             android:id="@+id/btn_system"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
+            android:layout_width="200dp"
+            android:layout_height="270dp"
+            android:orientation="vertical"
+            android:gravity="center"
             android:padding="20dp"
-            android:gravity="center_vertical"
             android:focusable="true"
             android:focusableInTouchMode="true"
             android:clickable="true"
-            android:background="@drawable/selector_engine_item">
+            android:background="@drawable/selector_card_system">
 
-            <!-- 图标区域 -->
+            <!-- 圆形图标 -->
             <FrameLayout
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="#2E7D32">
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:background="@drawable/icon_system">
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:text="SYS"
-                    android:textColor="@color/white"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
+                    android:text="🟢"
+                    android:textSize="30sp" />
             </FrameLayout>
 
-            <!-- 文字区域 -->
-            <LinearLayout
-                android:layout_width="0dp"
+            <!-- 引擎名 -->
+            <TextView
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginStart="16dp"
-                android:orientation="vertical">
+                android:layout_marginTop="16dp"
+                android:text="系统 WebView"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:gravity="center" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="系统 WebView"
-                    android:textColor="@color/white"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
+            <!-- 技术说明 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="原生 WebView"
+                android:textColor="#88FFBB"
+                android:textSize="12sp"
+                android:gravity="center" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="轻量快速 · 无额外体积 · 依赖系统版本"
-                    android:textColor="@color/text_normal"
-                    android:textSize="12sp" />
-            </LinearLayout>
+            <!-- 轻量标签 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"
+                android:text="轻量"
+                android:textColor="#FFFFFF"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:background="#2E7D32" />
+
+            <!-- 系统要求 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="依赖系统版本"
+                android:textColor="#66888888"
+                android:textSize="11sp"
+                android:gravity="center" />
+
+            <!-- 占位，与其他卡片高度对齐 -->
+            <View
+                android:layout_width="1dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
 
             <!-- 选中指示器 -->
             <View
                 android:id="@+id/indicator_system"
-                android:layout_width="8dp"
-                android:layout_height="8dp"
-                android:background="@color/color_accent"
+                android:layout_width="32dp"
+                android:layout_height="3dp"
+                android:layout_marginTop="8dp"
+                android:background="#00C853"
                 android:visibility="gone" />
-
-        </LinearLayout>
-
-        <!-- 底部按钮区域 -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="16dp"
-            android:gravity="end">
-
-            <!-- 记住选择 CheckBox 提示文字 -->
-            <TextView
-                android:id="@+id/tv_remember_hint"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_gravity="center_vertical"
-                android:paddingStart="8dp"
-                android:text="✓ 记住选择（下次直接进入）"
-                android:textColor="@color/text_normal"
-                android:textSize="12sp" />
-
-            <!-- 重置记住选择 -->
-            <TextView
-                android:id="@+id/btn_reset_prefs"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:paddingTop="8dp"
-                android:paddingBottom="8dp"
-                android:text="重置"
-                android:textColor="@color/text_normal"
-                android:textSize="14sp"
-                android:focusable="true"
-                android:clickable="true"
-                android:background="@color/channel_item_normal" />
 
         </LinearLayout>
 
     </LinearLayout>
 
-</FrameLayout>
+    <!-- ══ 底部操作栏 ══ -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="28dp">
+
+        <!-- 提示文字 -->
+        <TextView
+            android:id="@+id/tv_remember_hint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="每次启动都会显示此界面"
+            android:textColor="#55888888"
+            android:textSize="12sp" />
+
+    </LinearLayout>
+
+</LinearLayout>
 

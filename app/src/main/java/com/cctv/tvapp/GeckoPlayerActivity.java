@@ -1,8 +1,12 @@
 package com.cctv.tvapp;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -51,6 +55,23 @@ public class GeckoPlayerActivity extends BasePlayerActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // 兜底版本检测：GeckoView 148 要求 Android 8.0（API 26）及以上
+        // 正常情况下 EngineSelectActivity 会在路由时拦截，这里作为最后一道保障
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            Log.w(TAG, "GeckoView 148 不支持 Android " + Build.VERSION.RELEASE
+                    + "（< 8.0），自动切换到 Crosswalk");
+            Toast.makeText(this,
+                    "GeckoView 需要 Android 8+，本机（Android "
+                            + Build.VERSION.RELEASE + "）自动切换到 Crosswalk",
+                    Toast.LENGTH_LONG).show();
+            Intent intent = new Intent(this, CrosswalkPlayerActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            intent.putExtra(WebEngineType.EXTRA_KEY, WebEngineType.CROSSWALK.name());
+            intent.putExtra(WebEngineType.EXTRA_AUTO_ROUTED, true);
+            startActivity(intent);
+            finish();
+            return;
+        }
         initGeckoRuntime();   // Runtime 必须在 super.onCreate → initWebEngine 之前初始化
         super.onCreate(savedInstanceState);
     }
@@ -113,7 +134,6 @@ public class GeckoPlayerActivity extends BasePlayerActivity {
             GeckoRuntimeSettings runtimeSettings = new GeckoRuntimeSettings.Builder()
                     .allowInsecureConnections(GeckoRuntimeSettings.ALLOW_ALL)
                     .javaScriptEnabled(true)
-                    .useMaxScreenDepth(false)
                     .build();
             sRuntime = GeckoRuntime.create(getApplicationContext(), runtimeSettings);
         }

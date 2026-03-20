@@ -575,12 +575,14 @@ public abstract class BasePlayerActivity extends Activity {
                 "html,body{margin:0!important;padding:0!important;"
                 + "width:100vw!important;height:100vh!important;"
                 + "overflow:hidden!important;background:#000!important}"
+                // translateZ(0) 强制 GPU 独立图层，修复系统 WebView 视频黑屏
                 + "video{position:fixed!important;top:0!important;left:0!important;"
                 + "width:100vw!important;height:100vh!important;"
                 + "max-width:100vw!important;max-height:100vh!important;"
                 + "object-fit:contain!important;"
                 + "z-index:999999!important;background:#000!important;"
-                + "transform:none!important;margin:0!important;}";
+                + "transform:translateZ(0)!important;margin:0!important;"
+                + "-webkit-transform:translateZ(0)!important;}";
 
         String js = "javascript:(function(){"
                 + "if(!document.getElementById('_tvfs')){"
@@ -593,17 +595,25 @@ public abstract class BasePlayerActivity extends Activity {
                 + "while(top.parentElement&&top.parentElement!==document.body){top=top.parentElement;}"
                 + "var ch=document.body.children;"
                 + "for(var k=0;k<ch.length;k++){if(ch[k]!==top)ch[k].style.cssText='display:none!important';}}"
+                // simulateClick：兼容旧版 WebView（不支持 new Touch() 构造函数）
                 + "function simulateClick(el){"
                 + "if(!el)return;"
                 + "var r=el.getBoundingClientRect();"
                 + "var cx=r.left+r.width/2,cy=r.top+r.height/2;"
-                + "['touchstart','touchend','mousedown','mouseup','click'].forEach(function(t){"
-                + "var ev;"
-                + "if(t.startsWith('touch')){"
-                + "var touch=new Touch({identifier:1,target:el,clientX:cx,clientY:cy});"
-                + "ev=new TouchEvent(t,{bubbles:true,cancelable:true,touches:[touch],changedTouches:[touch]});"
-                + "}else{ev=new MouseEvent(t,{bubbles:true,cancelable:true,clientX:cx,clientY:cy});}"
-                + "el.dispatchEvent(ev);});}"
+                + "try{"
+                // 优先派发 MouseEvent（所有版本均支持）
+                + "['mousedown','mouseup','click'].forEach(function(t){"
+                + "el.dispatchEvent(new MouseEvent(t,{bubbles:true,cancelable:true,clientX:cx,clientY:cy}));});"
+                // TouchEvent：new Touch() 构造函数仅 Chrome 新版支持，做特性检测
+                + "if(typeof TouchEvent!=='undefined'&&typeof Touch!=='undefined'){"
+                + "var mkTouch=function(t){"
+                + "try{return new Touch({identifier:Date.now(),target:el,clientX:cx,clientY:cy});}"
+                + "catch(e){return null;}};"
+                + "var touch=mkTouch();"
+                + "if(touch){['touchstart','touchend'].forEach(function(t){"
+                + "try{el.dispatchEvent(new TouchEvent(t,{bubbles:true,cancelable:true,"
+                + "touches:[touch],changedTouches:[touch]}));}catch(e){}});}}"
+                + "}catch(e){}}"
                 + "function tryPlay(){"
                 + "var allV=document.querySelectorAll('video');"
                 + "for(var m=0;m<allV.length;m++){allV[m].muted=false;allV[m].volume=1.0;}"

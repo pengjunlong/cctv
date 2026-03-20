@@ -21,16 +21,17 @@ public enum WebEngineType {
      *   <li>劣势：AAR 体积较大（~50MB），首次冷启动稍慢</li>
      * </ul>
      */
-    GECKO("GeckoView（Firefox 引擎）", "推荐 · 最佳兼容性"),
+    GECKO("GeckoView（Firefox 引擎）", "推荐 · Android 8+ · 最佳兼容性"),
 
     /**
      * Crosswalk XWalkView（Chromium 内核）
      * <ul>
      *   <li>优势：独立于系统 WebView，提供固定版本的 Chromium 引擎</li>
      *   <li>劣势：项目已于 2019 年停止维护，仅支持 Android ≤ 7.0</li>
+     *   <li>在 Android 8+ 上会自动路由到 GeckoView</li>
      * </ul>
      */
-    CROSSWALK("Crosswalk（Chromium 引擎）", "适合 Android 7 及以下"),
+    CROSSWALK("Crosswalk（Chromium 引擎）", "推荐 · Android 7 及以下 · Chromium 53"),
 
     /**
      * 系统 WebView
@@ -54,6 +55,12 @@ public enum WebEngineType {
 
     /** Intent / SharedPreferences 的 Key */
     public static final String EXTRA_KEY = "web_engine_type";
+
+    /**
+     * Intent Extra Key：标记本次启动是由版本自动路由触发（非用户直接选择）
+     * <p>播放器收到此 Extra 时可显示提示：如"已自动切换为 GeckoView（原选 Crosswalk）"
+     */
+    public static final String EXTRA_AUTO_ROUTED = "web_engine_auto_routed";
 
     /** SharedPreferences 文件名 */
     public static final String PREFS_NAME = "engine_prefs";
